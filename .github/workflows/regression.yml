@@ -9,29 +9,40 @@ on:
       - main
 
 jobs:
-  test:
+  selenium-tests:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
           cache: maven
 
-      - name: Install Google Chrome
+      - name: Setup Chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Run Maven Tests
-        run: mvn clean test
+      - name: Setup ChromeDriver
+        uses: nanasess/setup-chromedriver@v2
+
+      - name: Verify Chrome Installation
+        run: |
+          google-chrome --version
+          chromedriver --version
+
+      - name: Build Project
+        run: mvn clean install -DskipTests
+
+      - name: Run Selenium Tests (Parallel)
+        run: mvn test
 
       - name: Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Test-Reports
+          name: Selenium-Test-Reports
           path: target/
